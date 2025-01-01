@@ -1,4 +1,7 @@
-// Update FormDTO.java
+package com.example.form_builder.dto;
+
+import java.util.List;
+
 public class FormDTO {
     private Long id;
     private String name;
@@ -6,20 +9,19 @@ public class FormDTO {
     private List<FieldDTO> fields;
     private SubmitEndpointDTO submitEndpoint;
 
-    // Default constructor
-    public FormDTO() {}
-
-    // Getters
+    // Getters & Setters
     public Long getId() { return id; }
-    public String getName() { return name; }
-    public boolean isPublished() { return published; }
-    public List<FieldDTO> getFields() { return fields; }
-    public SubmitEndpointDTO getSubmitEndpoint() { return submitEndpoint; }
-
-    // Setters
     public void setId(Long id) { this.id = id; }
+
+    public String getName() { return name; }
     public void setName(String name) { this.name = name; }
+
+    public boolean isPublished() { return published; }
     public void setPublished(boolean published) { this.published = published; }
+
+    public List<FieldDTO> getFields() { return fields; }
     public void setFields(List<FieldDTO> fields) { this.fields = fields; }
+
+    public SubmitEndpointDTO getSubmitEndpoint() { return submitEndpoint; }
     public void setSubmitEndpoint(SubmitEndpointDTO submitEndpoint) { this.submitEndpoint = submitEndpoint; }
 }

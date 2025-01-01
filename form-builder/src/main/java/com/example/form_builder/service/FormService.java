@@ -2,13 +2,16 @@ package com.example.form_builder.service;
 
 import com.example.form_builder.dto.FieldDTO;
 import com.example.form_builder.dto.FormDTO;
+import com.example.form_builder.dto.SubmitEndpointDTO;
 import com.example.form_builder.model.Field;
 import com.example.form_builder.model.Form;
+import com.example.form_builder.model.SubmitEndpoint;
 import com.example.form_builder.repository.FieldRepository;
 import com.example.form_builder.repository.FormRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -22,7 +25,6 @@ public class FormService {
         this.formRepository = formRepository;
         this.fieldRepository = fieldRepository;
     }
-// Add these methods inside the FormService class
 
     public List<FormDTO> getAllForms() {
         return formRepository.findAll().stream()
@@ -47,7 +49,12 @@ public class FormService {
                 .orElseThrow(() -> new EntityNotFoundException("Form not found"));
 
         form.setName(formDTO.getName());
-        form.setSubmitEndpoint(formDTO.getSubmitEndpoint());
+        if (formDTO.getSubmitEndpoint() != null) {
+            SubmitEndpoint submitEndpoint = new SubmitEndpoint();
+            submitEndpoint.setUrl(formDTO.getSubmitEndpoint().getUrl());
+            submitEndpoint.setMethod(formDTO.getSubmitEndpoint().getMethod());
+            form.setSubmitEndpoint(submitEndpoint);
+        }
 
         return convertToDTO(formRepository.save(form));
     }
@@ -87,20 +94,11 @@ public class FormService {
 
     @Transactional
     public FormDTO togglePublishStatus(Long id) {
-        System.out.println("Toggling publish status for form: " + id);
         Form form = formRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Form not found"));
 
-        boolean currentStatus = form.isPublished();
-        System.out.println("Current published status: " + currentStatus);
-
-        form.setPublished(!currentStatus);
-        System.out.println("New published status: " + form.isPublished());
-
-        Form savedForm = formRepository.save(form);
-        System.out.println("Saved form published status: " + savedForm.isPublished());
-
-        return convertToDTO(savedForm);
+        form.setPublished(!form.isPublished());
+        return convertToDTO(formRepository.save(form));
     }
 
     public List<FormDTO> getPublishedForms() {
@@ -109,16 +107,23 @@ public class FormService {
                 .collect(Collectors.toList());
     }
 
-    // Converter methods
     private FormDTO convertToDTO(Form form) {
         FormDTO dto = new FormDTO();
         dto.setId(form.getId());
         dto.setName(form.getName());
         dto.setPublished(form.isPublished());
-        dto.setSubmitEndpoint(form.getSubmitEndpoint());
         dto.setFields(form.getFields().stream()
                 .map(this::convertToFieldDTO)
                 .collect(Collectors.toList()));
+
+        if (form.getSubmitEndpoint() != null) {
+            SubmitEndpointDTO submitEndpointDTO = new SubmitEndpointDTO();
+            submitEndpointDTO.setId(form.getSubmitEndpoint().getId());
+            submitEndpointDTO.setUrl(form.getSubmitEndpoint().getUrl());
+            submitEndpointDTO.setMethod(form.getSubmitEndpoint().getMethod());
+            dto.setSubmitEndpoint(submitEndpointDTO);
+        }
+
         return dto;
     }
 
@@ -126,7 +131,14 @@ public class FormService {
         Form form = new Form();
         form.setName(dto.getName());
         form.setPublished(dto.isPublished());
-        form.setSubmitEndpoint(dto.getSubmitEndpoint());
+
+        if (dto.getSubmitEndpoint() != null) {
+            SubmitEndpoint submitEndpoint = new SubmitEndpoint();
+            submitEndpoint.setUrl(dto.getSubmitEndpoint().getUrl());
+            submitEndpoint.setMethod(dto.getSubmitEndpoint().getMethod());
+            form.setSubmitEndpoint(submitEndpoint);
+        }
+
         if (dto.getFields() != null) {
             form.setFields(dto.getFields().stream()
                     .map(fieldDTO -> {
@@ -136,6 +148,7 @@ public class FormService {
                     })
                     .collect(Collectors.toList()));
         }
+
         return form;
     }
 
